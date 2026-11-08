@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
+import glucoseRoutes from './routes/glucoseRoutes.js';
 
 const app = express();
 
@@ -14,4 +15,6 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/glucose', glucoseRoutes);
+
 export default app;

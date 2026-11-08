@@ -59,7 +59,7 @@ console.log('Request body:', req.body);
             });
         }
 
-        // Hash password
+        
         const passwordHash = await bcrypt.hash(password, 12);
 
         //Insert user into PostgreSQL

@@ -2,10 +2,8 @@ import jwt from 'jsonwebtoken';
 
 const authMiddleware = (req, res, next) => {
     try {
-        
         const authHeader = req.headers.authorization;
 
-        
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return res.status(401).json({
                 success: false,
@@ -15,19 +13,22 @@ const authMiddleware = (req, res, next) => {
 
         const token = authHeader.split(' ')[1];
 
-        // Verify JWT token
         const decoded = jwt.verify(
             token,
             process.env.JWT_SECRET
         );
 
-       
+        req.user = {
+            userId: decoded.userId
+        };
+
+        console.log('Authenticated User:', req.user);
 
         next();
 
     } catch (error) {
+        console.error('Authentication error:', error.message);
 
-        
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({
                 success: false,
@@ -35,7 +36,6 @@ const authMiddleware = (req, res, next) => {
             });
         }
 
-      
         if (error.name === 'JsonWebTokenError') {
             return res.status(401).json({
                 success: false,
