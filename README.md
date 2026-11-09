@@ -68,19 +68,7 @@ Average glucose values are displayed up to one decimal place.
 
 Sweety follows a client-server architecture in which the React frontend communicates with the Express backend through REST APIs. The backend handles authentication, validation, application logic, and database operations.
 
-```mermaid
-flowchart TD
-    A[User] --> B[React Frontend]
-    B --> C[Express REST API]
-    C --> D[JWT Authentication Middleware]
-    D --> E[Controllers]
-    E --> F[PostgreSQL Database]
-    F --> E
-    E --> C
-    C --> B
-    G[Automated Backend Tests] --> C
-    H[Database Seed Script] --> F
-```
+![Sweety System Architecture](architecture.png)
 
 ### Architecture Components
 
