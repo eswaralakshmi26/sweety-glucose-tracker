@@ -70,7 +70,8 @@ export const addGlucoseReading = async (req, res) => {
         }
 
         const futureDateCheck = await pool.query(
-            'SELECT $1::date > CURRENT_DATE AS is_future',
+           `SELECT $1::date > (NOW() AT TIME ZONE 'Asia/Kolkata')::date
+     AS is_future`,
             [reading_date]
         );
 
@@ -244,9 +245,8 @@ export const updateGlucoseReading = async (req, res) => {
         }
 
         const dateCheck = await client.query(
-            `SELECT
-                $1::date = $1::date AS valid_date,
-                $1::date > CURRENT_DATE AS is_future`,
+            `SELECT $1::date > (NOW() AT TIME ZONE 'Asia/Kolkata')::date
+AS is_future`,
             [reading_date]
         );
 

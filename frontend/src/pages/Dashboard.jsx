@@ -5,6 +5,7 @@ import {
     updateGlucoseReading,
     deleteGlucoseReading
 } from '../services/api';
+import Reports from './Reports';
 import '../styles/Dashboard.css';
 
 const TIME_SLOTS = [
@@ -58,6 +59,7 @@ const getIndiaDateInputValue = (value) => {
 const Dashboard = () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+    const [activeSection, setActiveSection] = useState('overview');
     const [readings, setReadings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -188,7 +190,6 @@ const Dashboard = () => {
             });
 
             await fetchReadings();
-
         } catch (error) {
             setError(error.message);
         } finally {
@@ -214,12 +215,21 @@ const Dashboard = () => {
             showSuccess(data.message);
 
             await fetchReadings();
-
         } catch (error) {
             setError(error.message);
         } finally {
             setDeletingId(null);
         }
+    };
+
+    const showOverviewSection = (sectionId) => {
+        setActiveSection('overview');
+
+        setTimeout(() => {
+            document.getElementById(sectionId)?.scrollIntoView({
+                behavior: 'smooth'
+            });
+        }, 0);
     };
 
     const handleLogout = () => {
@@ -260,20 +270,45 @@ const Dashboard = () => {
 
                     <p className="sidebar-label">MENU</p>
 
-                    <a href="/dashboard" className="sidebar-link active">
+                    <button
+                        type="button"
+                        className={`sidebar-link ${
+                            activeSection === 'overview' ? 'active' : ''
+                        }`}
+                        onClick={() => setActiveSection('overview')}
+                    >
                         <span className="sidebar-icon">▦</span>
                         Overview
-                    </a>
+                    </button>
 
-                    <a href="#add-reading" className="sidebar-link">
+                    <button
+                        type="button"
+                        className={`sidebar-link ${
+                            activeSection === 'reports' ? 'active' : ''
+                        }`}
+                        onClick={() => setActiveSection('reports')}
+                    >
+                        <span className="sidebar-icon">▤</span>
+                        Reports
+                    </button>
+
+                    <button
+                        type="button"
+                        className="sidebar-link"
+                        onClick={() => showOverviewSection('add-reading')}
+                    >
                         <span className="sidebar-icon">＋</span>
                         Add Reading
-                    </a>
+                    </button>
 
-                    <a href="#reading-history" className="sidebar-link">
+                    <button
+                        type="button"
+                        className="sidebar-link"
+                        onClick={() => showOverviewSection('reading-history')}
+                    >
                         <span className="sidebar-icon">◷</span>
                         Reading History
-                    </a>
+                    </button>
 
                 </div>
 
@@ -303,7 +338,11 @@ const Dashboard = () => {
 
                     <div>
                         <p className="topbar-label">SWEETY</p>
-                        <h2>Dashboard</h2>
+                        <h2>
+                            {activeSection === 'reports'
+                                ? 'Reports'
+                                : 'Dashboard'}
+                        </h2>
                     </div>
 
                     <div className="profile-info">
@@ -321,411 +360,422 @@ const Dashboard = () => {
 
                 </header>
 
-                <div className="dashboard-content">
+                {activeSection === 'reports' ? (
 
-                    <section className="welcome-section">
+                    <div className="dashboard-content">
+                        <Reports />
+                        <footer className="dashboard-footer">
+                            <p>© 2026 Sweety. Your health, your priority.</p>
+                        </footer>
+                    </div>
 
-                        <div>
+                ) : (
 
-                            <p className="welcome-date">
-                                {new Intl.DateTimeFormat('en-IN', {
-                                    weekday: 'long',
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric',
-                                    timeZone: 'Asia/Kolkata'
-                                }).format(new Date())}
-                            </p>
+                    <div className="dashboard-content">
 
-                            <h1>
-                                Hello, {user.name?.split(' ')[0] || 'there'}!
-                                <span> 👋</span>
-                            </h1>
-
-                            <p>
-                                Welcome back! Here's your glucose tracking
-                                overview.
-                            </p>
-
-                        </div>
-
-                        <div className="welcome-decoration">
-                            <span>♡</span>
-                            <div className="decoration-line"></div>
-                            <small>Take care of yourself</small>
-                        </div>
-
-                    </section>
-
-                    <section className="summary-grid">
-
-                        <div className="summary-card">
-
-                            <div className="summary-card-top">
-                                <div className="summary-icon red-icon">▤</div>
-                                <span className="summary-tag">All time</span>
-                            </div>
-
-                            <p>Total Readings</p>
-                            <h2>{readings.length}</h2>
-
-                            <span className="summary-description">
-                                Readings recorded
-                            </span>
-
-                        </div>
-
-                        <div className="summary-card">
-
-                            <div className="summary-card-top">
-                                <div className="summary-icon peach-icon">◷</div>
-                                <span className="summary-tag">Today</span>
-                            </div>
-
-                            <p>Today's Readings</p>
-                            <h2>{todayReadings.length}</h2>
-
-                            <span className="summary-description">
-                                Readings added today
-                            </span>
-
-                        </div>
-
-                        <div className="summary-card">
-
-                            <div className="summary-card-top">
-                                <div className="summary-icon green-icon">✓</div>
-                                <span className="summary-tag">Daily goal</span>
-                            </div>
-
-                            <p>Completed Slots</p>
-                            <h2>{completedSlots}/4</h2>
-
-                            <span className="summary-description">
-                                Daily time slots recorded
-                            </span>
-
-                        </div>
-
-                    </section>
-
-                    <section
-                        className="dashboard-section"
-                        id="add-reading"
-                    >
-
-                        <div className="section-heading">
+                        <section className="welcome-section">
 
                             <div>
-                                <span className="section-eyebrow">
-                                    DAILY TRACKING
-                                </span>
 
-                                <h2>Add Glucose Reading</h2>
+                                <p className="welcome-date">
+                                    {new Intl.DateTimeFormat('en-IN', {
+                                        weekday: 'long',
+                                        day: 'numeric',
+                                        month: 'long',
+                                        year: 'numeric',
+                                        timeZone: 'Asia/Kolkata'
+                                    }).format(new Date())}
+                                </p>
+
+                                <h1>
+                                    Hello, {user.name?.split(' ')[0] || 'there'}!
+                                    <span> 👋</span>
+                                </h1>
 
                                 <p>
-                                    Record your blood glucose level for a
-                                    selected time slot.
+                                    Welcome back! Here's your glucose tracking
+                                    overview.
                                 </p>
+
                             </div>
 
-                        </div>
+                            <div className="welcome-decoration">
+                                <span>♡</span>
+                                <div className="decoration-line"></div>
+                                <small>Take care of yourself</small>
+                            </div>
 
-                        <form
-                            className="reading-form"
-                            onSubmit={handleSubmit}
+                        </section>
+
+                        <section className="summary-grid">
+
+                            <div className="summary-card">
+
+                                <div className="summary-card-top">
+                                    <div className="summary-icon red-icon">▤</div>
+                                    <span className="summary-tag">All time</span>
+                                </div>
+
+                                <p>Total Readings</p>
+                                <h2>{readings.length}</h2>
+
+                                <span className="summary-description">
+                                    Readings recorded
+                                </span>
+
+                            </div>
+
+                            <div className="summary-card">
+
+                                <div className="summary-card-top">
+                                    <div className="summary-icon peach-icon">◷</div>
+                                    <span className="summary-tag">Today</span>
+                                </div>
+
+                                <p>Today's Readings</p>
+                                <h2>{todayReadings.length}</h2>
+
+                                <span className="summary-description">
+                                    Readings added today
+                                </span>
+
+                            </div>
+
+                            <div className="summary-card">
+
+                                <div className="summary-card-top">
+                                    <div className="summary-icon green-icon">✓</div>
+                                    <span className="summary-tag">Daily goal</span>
+                                </div>
+
+                                <p>Completed Slots</p>
+                                <h2>{completedSlots}/4</h2>
+
+                                <span className="summary-description">
+                                    Daily time slots recorded
+                                </span>
+
+                            </div>
+
+                        </section>
+
+                        <section
+                            className="dashboard-section"
+                            id="add-reading"
                         >
 
-                            <div className="form-group">
+                            <div className="section-heading">
 
-                                <label htmlFor="reading_date">
-                                    Reading Date
-                                </label>
+                                <div>
+                                    <span className="section-eyebrow">
+                                        DAILY TRACKING
+                                    </span>
 
-                                <input
-                                    type="date"
-                                    id="reading_date"
-                                    name="reading_date"
-                                    value={formData.reading_date}
-                                    max={getTodayDate()}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                    <h2>Add Glucose Reading</h2>
 
-                            </div>
-
-                            <div className="form-group">
-
-                                <label htmlFor="time_slot">
-                                    Time Slot
-                                </label>
-
-                                <select
-                                    id="time_slot"
-                                    name="time_slot"
-                                    value={formData.time_slot}
-                                    onChange={handleChange}
-                                    required
-                                >
-
-                                    {TIME_SLOTS.map((slot) => (
-                                        <option key={slot} value={slot}>
-                                            {slot}
-                                        </option>
-                                    ))}
-
-                                </select>
-
-                            </div>
-
-                            <div className="form-group">
-
-                                <label htmlFor="glucose_value">
-                                    Glucose Level
-                                </label>
-
-                                <div className="glucose-input-wrapper">
-
-                                    <input
-                                        type="number"
-                                        id="glucose_value"
-                                        name="glucose_value"
-                                        value={formData.glucose_value}
-                                        onChange={handleChange}
-                                        placeholder="e.g. 110"
-                                        min="40"
-                                        max="600"
-                                        step="1"
-                                        required
-                                    />
-
-                                    <span>mg/dL</span>
-
+                                    <p>
+                                        Record your blood glucose level for a
+                                        selected time slot.
+                                    </p>
                                 </div>
 
                             </div>
 
-                            <div className="form-actions">
+                            <form
+                                className="reading-form"
+                                onSubmit={handleSubmit}
+                            >
 
-                                <button
-                                    type="submit"
-                                    className="save-reading-btn"
-                                    disabled={submitting}
-                                >
-                                    {submitting
-                                        ? 'Saving...'
-                                        : editingId
-                                            ? 'Update Reading'
-                                            : 'Save Reading'}
-                                </button>
+                                <div className="form-group">
 
-                                {editingId && (
-                                    <button
-                                        type="button"
-                                        className="cancel-edit-btn"
-                                        onClick={handleCancelEdit}
+                                    <label htmlFor="reading_date">
+                                        Reading Date
+                                    </label>
+
+                                    <input
+                                        type="date"
+                                        id="reading_date"
+                                        name="reading_date"
+                                        value={formData.reading_date}
+                                        max={getTodayDate()}
+                                        onChange={handleChange}
+                                        required
+                                    />
+
+                                </div>
+
+                                <div className="form-group">
+
+                                    <label htmlFor="time_slot">
+                                        Time Slot
+                                    </label>
+
+                                    <select
+                                        id="time_slot"
+                                        name="time_slot"
+                                        value={formData.time_slot}
+                                        onChange={handleChange}
+                                        required
                                     >
-                                        Cancel
+                                        {TIME_SLOTS.map((slot) => (
+                                            <option key={slot} value={slot}>
+                                                {slot}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                </div>
+
+                                <div className="form-group">
+
+                                    <label htmlFor="glucose_value">
+                                        Glucose Level
+                                    </label>
+
+                                    <div className="glucose-input-wrapper">
+
+                                        <input
+                                            type="number"
+                                            id="glucose_value"
+                                            name="glucose_value"
+                                            value={formData.glucose_value}
+                                            onChange={handleChange}
+                                            placeholder="e.g. 110"
+                                            min="40"
+                                            max="600"
+                                            step="1"
+                                            required
+                                        />
+
+                                        <span>mg/dL</span>
+
+                                    </div>
+
+                                </div>
+
+                                <div className="form-actions">
+
+                                    <button
+                                        type="submit"
+                                        className="save-reading-btn"
+                                        disabled={submitting}
+                                    >
+                                        {submitting
+                                            ? 'Saving...'
+                                            : editingId
+                                                ? 'Update Reading'
+                                                : 'Save Reading'}
                                     </button>
-                                )}
 
-                            </div>
+                                    {editingId && (
+                                        <button
+                                            type="button"
+                                            className="cancel-edit-btn"
+                                            onClick={handleCancelEdit}
+                                        >
+                                            Cancel
+                                        </button>
+                                    )}
 
-                        </form>
+                                </div>
 
-                        {error && (
-                            <div className="dashboard-alert error-alert">
-                                {error}
-                            </div>
-                        )}
+                            </form>
 
-                        {success && (
-                            <div className="dashboard-alert success-alert">
-                                {success}
-                            </div>
-                        )}
+                            {error && (
+                                <div className="dashboard-alert error-alert">
+                                    {error}
+                                </div>
+                            )}
 
-                    </section>
+                            {success && (
+                                <div className="dashboard-alert success-alert">
+                                    {success}
+                                </div>
+                            )}
 
-                    <section
-                        className="dashboard-section history-section"
-                        id="reading-history"
-                    >
+                        </section>
 
-                        <div className="section-heading history-heading">
+                        <section
+                            className="dashboard-section history-section"
+                            id="reading-history"
+                        >
 
-                            <div>
+                            <div className="section-heading history-heading">
 
-                                <span className="section-eyebrow">
-                                    YOUR RECORDS
+                                <div>
+
+                                    <span className="section-eyebrow">
+                                        YOUR RECORDS
+                                    </span>
+
+                                    <h2>Reading History</h2>
+
+                                    <p>
+                                        View and manage your previous glucose
+                                        readings.
+                                    </p>
+
+                                </div>
+
+                                <span className="history-count">
+                                    {readings.length} Records
                                 </span>
 
-                                <h2>Reading History</h2>
-
-                                <p>
-                                    View and manage your previous glucose
-                                    readings.
-                                </p>
-
                             </div>
 
-                            <span className="history-count">
-                                {readings.length} Records
-                            </span>
+                            {loading ? (
 
-                        </div>
+                                <div className="empty-state">
+                                    <p>Loading your readings...</p>
+                                </div>
 
-                        {loading ? (
+                            ) : readings.length === 0 ? (
 
-                            <div className="empty-state">
-                                <p>Loading your readings...</p>
-                            </div>
+                                <div className="empty-state">
 
-                        ) : readings.length === 0 ? (
+                                    <div className="empty-icon">♡</div>
 
-                            <div className="empty-state">
+                                    <h3>No readings yet</h3>
 
-                                <div className="empty-icon">♡</div>
+                                    <p>
+                                        Your glucose readings will appear here
+                                        after you add your first record.
+                                    </p>
 
-                                <h3>No readings yet</h3>
+                                </div>
 
-                                <p>
-                                    Your glucose readings will appear here
-                                    after you add your first record.
-                                </p>
+                            ) : (
 
-                            </div>
+                                <div className="table-wrapper">
 
-                        ) : (
+                                    <table className="readings-table">
 
-                            <div className="table-wrapper">
-
-                                <table className="readings-table">
-
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Time Slot</th>
-                                            <th>Glucose Level</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-
-                                        {readings.map((reading) => (
-
-                                            <tr key={reading.id}>
-
-                                                <td className="reading-date">
-                                                    {getReadingDate(
-                                                        reading.reading_date
-                                                    )}
-                                                </td>
-
-                                                <td>
-                                                    <span className="time-slot-badge">
-                                                        {reading.time_slot}
-                                                    </span>
-                                                </td>
-
-                                                <td>
-
-                                                    <strong className="glucose-value">
-                                                        {reading.glucose_value}
-                                                    </strong>
-
-                                                    <span className="glucose-unit">
-                                                        mg/dL
-                                                    </span>
-
-                                                </td>
-
-                                                <td>
-
-                                                    <div className="action-buttons">
-
-                                                        <button
-                                                            type="button"
-                                                            className="icon-action-btn"
-                                                            onClick={() =>
-                                                                handleEdit(reading)
-                                                            }
-                                                            title="Edit reading"
-                                                            aria-label="Edit reading"
-                                                        >
-
-                                                            <svg
-                                                                viewBox="0 0 24 24"
-                                                                width="19"
-                                                                height="19"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                strokeWidth="2"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                            >
-                                                                <path d="M12 20h9" />
-                                                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />
-                                                            </svg>
-
-                                                        </button>
-
-                                                        <button
-                                                            type="button"
-                                                            className="icon-action-btn"
-                                                            onClick={() =>
-                                                                handleDelete(reading.id)
-                                                            }
-                                                            disabled={
-                                                                deletingId === reading.id
-                                                            }
-                                                            title="Delete reading"
-                                                            aria-label="Delete reading"
-                                                        >
-
-                                                            <svg
-                                                                viewBox="0 0 24 24"
-                                                                width="19"
-                                                                height="19"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                strokeWidth="2"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                            >
-                                                                <path d="M3 6h18" />
-                                                                <path d="M8 6V4h8v2" />
-                                                                <path d="M19 6l-1 14H6L5 6" />
-                                                                <path d="M10 11v5" />
-                                                                <path d="M14 11v5" />
-                                                            </svg>
-
-                                                        </button>
-
-                                                    </div>
-
-                                                </td>
-
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Time Slot</th>
+                                                <th>Glucose Level</th>
+                                                <th>Action</th>
                                             </tr>
+                                        </thead>
 
-                                        ))}
+                                        <tbody>
 
-                                    </tbody>
+                                            {readings.map((reading) => (
 
-                                </table>
+                                                <tr key={reading.id}>
 
-                            </div>
+                                                    <td className="reading-date">
+                                                        {getReadingDate(
+                                                            reading.reading_date
+                                                        )}
+                                                    </td>
 
-                        )}
+                                                    <td>
+                                                        <span className="time-slot-badge">
+                                                            {reading.time_slot}
+                                                        </span>
+                                                    </td>
 
-                    </section>
+                                                    <td>
 
-                    <footer className="dashboard-footer">
-                        <p>© 2026 Sweety. Your health, your priority.</p>
-                    </footer>
+                                                        <strong className="glucose-value">
+                                                            {reading.glucose_value}
+                                                        </strong>
 
-                </div>
+                                                        <span className="glucose-unit">
+                                                            mg/dL
+                                                        </span>
+
+                                                    </td>
+
+                                                    <td>
+
+                                                        <div className="action-buttons">
+
+                                                            <button
+                                                                type="button"
+                                                                className="icon-action-btn"
+                                                                onClick={() =>
+                                                                    handleEdit(reading)
+                                                                }
+                                                                title="Edit reading"
+                                                                aria-label="Edit reading"
+                                                            >
+
+                                                                <svg
+                                                                    viewBox="0 0 24 24"
+                                                                    width="19"
+                                                                    height="19"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                >
+                                                                    <path d="M12 20h9" />
+                                                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />
+                                                                </svg>
+
+                                                            </button>
+
+                                                            <button
+                                                                type="button"
+                                                                className="icon-action-btn"
+                                                                onClick={() =>
+                                                                    handleDelete(reading.id)
+                                                                }
+                                                                disabled={
+                                                                    deletingId === reading.id
+                                                                }
+                                                                title="Delete reading"
+                                                                aria-label="Delete reading"
+                                                            >
+
+                                                                <svg
+                                                                    viewBox="0 0 24 24"
+                                                                    width="19"
+                                                                    height="19"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                >
+                                                                    <path d="M3 6h18" />
+                                                                    <path d="M8 6V4h8v2" />
+                                                                    <path d="M19 6l-1 14H6L5 6" />
+                                                                    <path d="M10 11v5" />
+                                                                    <path d="M14 11v5" />
+                                                                </svg>
+
+                                                            </button>
+
+                                                        </div>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            ))}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            )}
+
+                        </section>
+
+                        <footer className="dashboard-footer">
+                            <p>© 2026 Sweety. Your health, your priority.</p>
+                        </footer>
+
+                    </div>
+
+                )}
 
             </main>
 

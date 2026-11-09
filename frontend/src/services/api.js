@@ -92,3 +92,37 @@ export const deleteGlucoseReading = async (id) => {
 
     return handleResponse(response);
 };
+
+
+export const getDailyReport = async (date) => {
+    const response = await fetch(
+        `${API_URL}/reports/daily?date=${encodeURIComponent(date)}`,
+        {
+            method: 'GET',
+            headers: getAuthHeaders()
+        }
+    );
+
+    return handleResponse(response);
+};
+
+export const getMonthToDateReport = async (date) => {
+    const response = await fetch(
+        `${API_URL}/reports/month-to-date?date=${encodeURIComponent(date)}`,
+        {
+            method: 'GET',
+            headers: getAuthHeaders()
+        }
+    );
+
+    return handleResponse(response);
+};
+
+export const getPreviousMonthReport = async () => {
+    const response = await fetch(`${API_URL}/reports/previous-month`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    });
+
+    return handleResponse(response);
+};
